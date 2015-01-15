@@ -1,0 +1,75 @@
+---
+- hosts: devstack
+  tasks:
+    - yum: name=deltarpm state=latest
+      sudo: True
+    - name: Install common deps
+      sudo: True
+      yum: name={{ item }} state=latest
+      with_items:
+        - git
+        - gcc
+        - htop
+        - python-devel
+        - libffi-devel
+        - libxml2-devel
+        - libxslt-devel
+        - screen
+
+- hosts: compute
+  tasks:
+    - name: Install deps for devstack
+      sudo: True
+      yum: name={{ item }} state=latest
+      with_items:
+        - MySQL-python
+        - mysql-devel
+        - iptables
+        - iptables-services
+
+- hosts: devstack
+  tasks:
+    - name: cloning devstack
+      sudo: False
+      shell: git clone https://git.openstack.org/openstack-dev/devstack /home/vagrant/devstack creates=/home/vagrant/devstack
+
+- hosts: orchestration
+  tasks:
+    - name: copying in local.conf
+      sudo: False
+      copy: src="./heat-local.conf" dest="/home/vagrant/devstack/local.conf" mode=0644
+
+- hosts: compute
+  tasks:
+    - name: copying in local.conf
+      sudo: False
+      copy: src="./stack-local.conf" dest="/home/vagrant/devstack/local.conf" mode=0644
+
+- hosts: compute
+  tasks:
+    - name: opening firewall
+      sudo: True
+      shell: iptables -I INPUT -j ACCEPT
+    - name: saving rules
+      sudo: True
+      shell: iptables-save > /etc/sysconfig/iptables
+    - name: saving rules
+      sudo: True
+      shell: chkconfig iptables on
+
+- hosts: compute
+  vars:
+    creds: source /home/vagrant/devstack/accrc/admin/admin
+  tasks:
+    - name: reserving flat IPs
+      tags: ["post"]
+      shell: "{{ creds }}; for i in `seq 2 10`; do nova-manage fixed reserve 10.4.128.$i; done"
+    - name: adding heat SSH key
+      tags: ["post"]
+      shell: "{{ creds }}; nova keypair-add heat_key > /vagrant/heat_key.priv"
+    - name: security group for ping
+      tags: ["post"]
+      shell: "{{ creds }}; nova secgroup-add-rule default icmp -1 -1 0.0.0.0/0"
+    - name: security group for ssh
+      tags: ["post"]
+      shell: "{{ creds }}; nova secgroup-add-rule default tcp 22 22 0.0.0.0/0"
