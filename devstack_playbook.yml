@@ -33,6 +33,12 @@
       sudo: False
       shell: git clone https://git.openstack.org/openstack-dev/devstack /home/vagrant/devstack creates=/home/vagrant/devstack
 
+- hosts: devstack
+  tasks:
+    - name: copying images
+      sudo: False
+      copy: src=files/ dest=/home/vagrant/devstack/files/
+
 - hosts: orchestration
   tasks:
     - name: copying in local.conf
