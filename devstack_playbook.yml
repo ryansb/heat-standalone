@@ -72,10 +72,13 @@
       shell: "{{ creds }}; for i in `seq 2 10`; do nova-manage fixed reserve 10.4.128.$i; done"
     - name: adding heat SSH key
       tags: ["post"]
-      shell: "{{ creds }}; nova keypair-add heat_key > /vagrant/heat_key.priv"
+      shell: creates=/vagrant/heat_key.priv "{{ creds }}; nova keypair-add heat_key > /vagrant/heat_key.priv"
     - name: security group for ping
       tags: ["post"]
-      shell: "{{ creds }}; nova secgroup-add-rule default icmp -1 -1 0.0.0.0/0"
+      shell: "{{ creds }}; nova secgroup-add-rule default icmp -1 -1 0.0.0.0/0 || true"
     - name: security group for ssh
       tags: ["post"]
-      shell: "{{ creds }}; nova secgroup-add-rule default tcp 22 22 0.0.0.0/0"
+      shell: "{{ creds }}; nova secgroup-add-rule default tcp 22 22 0.0.0.0/0 || true"
+    - name: copying out credentials
+      tags: ["post"]
+      shell: "cp -r /home/vagrant/devstack/accrc /vagrant/accrc"
