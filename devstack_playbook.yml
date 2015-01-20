@@ -84,14 +84,13 @@
       shell: "{{ creds }}; nova secgroup-add-rule default tcp 22 22 0.0.0.0/0 || true"
     - name: copying out credentials
       tags: ["post"]
-      shell: "cp -r /home/vagrant/devstack/accrc /vagrant/accrc"
+      synchronize: mode=pull src="/home/vagrant/devstack/accrc/" dest="accrc/" delete=yes
     - name: adding heat service to keystone
       tags: ["post"]
       shell: "{{ creds }}; keystone service-create --name heat --type orchestration --description 'Heat Orchestration'"
     - name: adding heat endpoint
       tags: ["post"]
       shell: "{{ creds }}; keystone endpoint-create --region RegionOne --service-id=$(keystone service-list | awk '/ orchestration / {printf $2}') --publicurl='http://192.168.33.4:8004/v1/%(tenant_id)s' --internalurl='http://192.168.33.4:8004/v1/%(tenant_id)s' --adminurl='http://192.168.33.4:8004/v1/%(tenant_id)s'"
-      register: tenantid
 
 - hosts: orchestration
   vars:
@@ -102,6 +101,7 @@
     - name: get tenant
       shell: "{{ creds }}; keystone tenant-list | awk '/ admin / { printf $2}'"
       tags: ["post"]
+      register: tenantid
     - name: Creating standalone credentials
       tags: ["post"]
-      template: src=heat.env.j2 dst=/home/vagrant/
+      template: src=heat.env.j2 dest=/home/vagrant/heat.env
