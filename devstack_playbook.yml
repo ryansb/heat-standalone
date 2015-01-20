@@ -59,9 +59,16 @@
     - name: saving rules
       sudo: True
       shell: iptables-save > /etc/sysconfig/iptables
-    - name: saving rules
+    - name: configuring iptables
       sudo: True
       shell: chkconfig iptables on
+
+- hosts: devstack
+  tasks:
+    - name: running stack.sh
+      tags: ["runstack"]
+      sudo: False
+      shell: chdir=/home/vagrant/devstack ./stack.sh
 
 - hosts: compute
   vars:
