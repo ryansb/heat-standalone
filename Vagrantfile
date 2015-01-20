@@ -15,6 +15,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     stack.vm.box = "chef/fedora-20"
     stack.vm.hostname = "stack"
     stack.vm.network "private_network", ip: "192.168.33.3", netmask: "255.255.255.0"
+    stack.vm.network "private_network", ip: "10.4.128.3", netmask: "255.255.255.0"
     stack.vm.provider "virtualbox" do |vb|
       vb.memory = 10000
       vb.customize ["modifyvm", :id, "--macaddress1", "080027e94f3d"]
@@ -25,6 +26,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     heat.vm.box = "chef/fedora-20"
     heat.vm.hostname = "heat"
     heat.vm.network "private_network", ip: "192.168.33.4", netmask: "255.255.255.0"
+    heat.vm.network "private_network", ip: "10.4.128.4", netmask: "255.255.255.0"
     heat.vm.provider "virtualbox" do |vb|
       vb.memory = 5000
       vb.customize ["modifyvm", :id, "--macaddress1", "080027e94f4d"]
